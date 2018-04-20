@@ -7,11 +7,11 @@ class Contact(models.Model):
     avatar = models.URLField(max_length=1000)
     def to_json(self):
         return {
-      'id': self.id,
-      'name': self.name,
-      'phone': self.phone,
-      'avatar': self.avatar,
-    }
+            'id': self.id,
+            'name': self.name,
+            'phone': self.phone,
+            'avatar': self.avatar
+        }
     def __str__(self):
         return self.name
 
@@ -20,9 +20,9 @@ class Todo(models.Model):
     deadline = models.CharField(max_length=200)
     def to_json(self):
         return {
-      'id': self.id,
-      'title': self.title,
-      'deadline': self.deadline,
-    }
+            'id': self.id,
+            'title': self.title,
+            'deadline': self.deadline
+        }
     def __str__(self):
         return self.title

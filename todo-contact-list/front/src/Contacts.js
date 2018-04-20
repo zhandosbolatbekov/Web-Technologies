@@ -1,7 +1,6 @@
 import React from 'react';
 import helpers from './helpers';
-
-const api = 'http://localhost:8000/api/';
+import client from './client'
 
 //onClick={() => this.changeCheck(data.id)}
 class TimersDashboard extends React.Component {
@@ -15,27 +14,28 @@ class TimersDashboard extends React.Component {
   }
 
   componentDidMount() {
-    fetch(api + 'contacts/')
-    .then(response => response.json())
-    .then(data => {
+    client.getContacts((data) => {
       let contacts = data.map((contact) => ({
           title: contact.name,
           project: contact.phone,
           imgPath: contact.avatar,
           id: contact.id
-        }));
+      }));
       this.setState({timers: contacts});
-      console.log("state", this.state.timers);
-    });
+    });  
   }
 
   handleTrashClick = (timerId) => {
-    fetch(api + 'contact_detail/' + timerId.toString(), {method: 'DELETE'})
-    .then(response => response.json())
-    this.setState({
-      timers: this.state.timers.filter(timer => timer.id !== timerId),
+    client.deleteContact(timerId, (contact) => {
+      if(contact) {
+        alert('DELETED')
+        this.setState({
+          timers: this.state.timers.filter(timer => timer.id !== timerId),
+        });
+      }
     });
   }
+
   handleSearched = (text) => {
     let newArray = this.state.timers.filter ( item => {
       return item.title.toLowerCase().indexOf(text.toLowerCase()) >= 0 ||
@@ -46,8 +46,6 @@ class TimersDashboard extends React.Component {
       timers: newArray
     })
   }
-  
-  
 
   handleCreateFormSubmit = (timer) => {
     this.createTimer(timer);
@@ -59,16 +57,14 @@ class TimersDashboard extends React.Component {
     formData.append('name', timer.title);
     formData.append('phone', timer.project);
     formData.append('avatar', timer.imgPath);
-    return fetch(api + 'add_contact/' , {
-        method: 'POST',
-        body: formData
+    client.createContact(formData, (contact) => {
+      if(contact) {
+        alert('CREATED')
+        this.setState({
+          timers: this.state.timers.concat(contact),
+        });
+      }
     })
-    .then(response => response.json())
-
-    const t = helpers.newTimer(timer);
-    this.setState({
-      timers: this.state.timers.concat(t),
-    });
   };
 
   handleEditFormSubmit = (timer) => {
@@ -76,20 +72,32 @@ class TimersDashboard extends React.Component {
   };
 
   updateTimer = (newTimer) => {
-    const newArr = this.state.timers.map((timer) => {
-      if (timer.id === newTimer.id) {
-        return Object.assign({}, timer, {
-          title: newTimer.title,
-          project: newTimer.project,
-          imgPath: newTimer.imgPath,
+    const formData = new FormData();
+    formData.append('name', newTimer.title);
+    formData.append('phone', newTimer.project);
+    formData.append('avatar', newTimer.imgPath);
+
+    client.updateContact(newTimer.id, formData, (contact) => {
+      if(contact) {
+        console.log('HELLO', contact);
+        alert('UPDATED')
+        const newArr = this.state.timers.map((timer) => {
+          if (timer.id === newTimer.id) {
+            return Object.assign({}, timer, {
+              title: newTimer.title,
+              project: newTimer.project,
+              imgPath: newTimer.imgPath,
+            });
+          } else {
+            return timer;
+          }
         });
-      } else {
-        return timer;
+        this.setState({
+          timers: newArr,
+        });   
       }
-    });
-    this.setState({
-      timers: newArr,
-    });    
+    })
+
   };
 
   render() {
@@ -158,11 +166,11 @@ class EditableTimer extends React.Component {
     })
   };
 
-    handleFormClose = () => {
+  handleFormClose = () => {
     this.closeForm();
   };
 
-   closeForm = () => {
+  closeForm = () => {
     this.setState({
       editFormOpen: false,
     })

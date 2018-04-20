@@ -1,5 +1,6 @@
 import React from 'react';
 import helpers from './helpers';
+import client from './client';
 
 //onClick={() => this.changeCheck(data.id)}
 class TimersDashboard extends React.Component {
@@ -8,25 +9,29 @@ class TimersDashboard extends React.Component {
     super(props);
 
     this.state = {
-      timers: [
-        {
-          title: "Web technologies",
-          project: "5 October", 
-          id: helpers.guid(),
-          priority: 2,
-        }, {
-          title: "System Programming",
-          project: "4 September",
-          id: helpers.guid(),
-          priority: 1,
-        }
-      ],
+      timers: []
     };
   }
 
+  componentDidMount() {
+    client.getTodos((data) => {
+      let timers = data.map((timer) => ({
+          title: timer.title,
+          project: timer.deadline,
+          id: timer.id
+      }));
+      this.setState({timers: timers});
+    });  
+  }
+
   handleTrashClick = (timerId) => {
-    this.setState({
-      timers: this.state.timers.filter(timer => timer.id !== timerId),
+    client.deleteContact(timerId, (todo) => {
+      if(todo) {
+        alert('DELETED')
+        this.setState({
+          timers: this.state.timers.filter(timer => todo.id !== timerId),
+        });
+      }
     });
   }
 
@@ -47,6 +52,18 @@ class TimersDashboard extends React.Component {
 
 
   createTimer = (timer) => {
+    const formData = new FormData();
+    formData.append('title', timer.title);
+    formData.append('deadline', timer.project);
+    client.createTodo(formData, (todo) => {
+      if(todo) {
+        alert('CREATED')
+        this.setState({
+          timers: this.state.timers.concat(todo),
+        });
+      }
+    })
+
     const t = helpers.newTimer(timer);
     this.setState({
       timers: this.state.timers.concat(t),
@@ -59,21 +76,28 @@ class TimersDashboard extends React.Component {
 
 
   updateTimer = (newTimer) => {
-  
-    const newArr = this.state.timers.map((timer) => {
-      if (timer.id === newTimer.id) {
-        return Object.assign({}, timer, {
-          title: newTimer.title,
-          project: newTimer.project,
+    const formData = new FormData();
+    formData.append('title', newTimer.title);
+    formData.append('project', newTimer.project);
+
+    client.updateTodo(newTimer.id, formData, (todo) => {
+      if (todo) {
+        alert('UPDATED')
+        const newArr = this.state.timers.map((timer) => {
+          if (timer.id === newTimer.id) {
+            return Object.assign({}, timer, {
+              title: newTimer.title,
+              project: newTimer.project,
+            });
+          } else {
+            return timer;
+          }
         });
-      } else {
-        return timer;
+        this.setState({
+          timers: newArr,
+        });   
       }
-    });
-    
-    this.setState({
-      timers: newArr,
-    });    
+    }); 
   };
 
 

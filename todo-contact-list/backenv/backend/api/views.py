@@ -34,6 +34,41 @@ def contact_detail(request, contact_id):
         contact.avatar = data.get('avatar', contact.avatar)
         contact.save()
         return JsonResponse(contact.to_json())
-    elif request.method == "DELETE":
+    elif request.method == "OPTIONS":
         contact.delete()
         return JsonResponse(contact.to_json())
+
+@csrf_exempt
+def todo_list(request):
+    todos = Todo.objects.all()
+    todos_json = [todo.to_json() for todo in todos]
+    return JsonResponse(todos_json, safe=False)
+
+@csrf_exempt
+def add_todo(request):
+    data = request.POST
+    todo = Todo()
+    todo.title = data.get('title', '')
+    todo.deadline = data.get('deadline', '')
+    todo.save()
+    return JsonResponse(todo.to_json(), status=201)
+
+@csrf_exempt
+def todo_detail(request, todo_id):
+    try:
+        todo = Todo.objects.get(pk=todo_id)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=404)
+    if request.method == "GET":
+        return JsonResponse(todo.to_json())
+    elif request.method == "POST":
+        data = request.POST
+        todo.title = data.get('title', todo.title)
+        todo.deadline = data.get('deadline', todo.deadline)
+        todo.save()
+        return JsonResponse(todo.to_json())
+    elif request.method == "OPTIONS":
+        todo.delete()
+        return JsonResponse(todo.to_json())
+
+
