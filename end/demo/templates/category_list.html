@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+  
+{% block content %}
+      
+      <div class="well">
+        <h1>
+          {% if categories|length > 1 %}
+            {{categories|length}} categories
+          {% elif categories|length == 1 %}
+            {{categories|length}} category
+          {% else %}
+            Category list empty
+          {% endif %}
+        </h1>
+        <a href="{%url 'new_product'%}" class="btn btn-primary pull-right" role="button">Add new product</a>
+        <br/>
+        <br/>
+        {% for c in categories %}
+          <div class="panel panel-default">
+            <div class="panel-body">
+              <a href="{%url 'category_detail' category_id=c.id%}"><h4>{{c}}</h4></a>
+              <div class="btn-block pull-right">
+              </div>
+            </div>
+          </div>
+      {% endfor %}
+      </div>
+
+{% endblock content %}

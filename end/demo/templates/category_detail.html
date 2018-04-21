@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+  
+{% block content %}
+      
+      <div class="well">
+        <h1>
+          {% if products|length > 1 %}
+            {{products|length}} products
+          {% elif products|length == 1 %}
+            {{products|length}} product
+          {% else %}
+            Product list empty
+          {% endif %}
+        </h1>
+        <br/>
+        <br/>
+        {% for b in products %}
+          <div class="panel panel-default">
+            <div class="panel-body">
+              <h3>{{b.name}}</h3>
+              <h4>{{b.category}}</h4>
+              <div class="btn-block pull-right">
+                <a href="{% url 'edit_product' product_id=b.id %}" class="btn btn-primary col-xs-6" role="button">Edit</a>
+                <a href="{% url 'delete_product' product_id=b.id %}" class="btn btn-danger col-xs-6" role="button">Delete</a>
+              </div>
+            </div>
+          </div>
+      {% endfor %}
+      </div>
+
+{% endblock content %}
