@@ -1,0 +1,21 @@
+{%extends "base.html"%}
+
+{% block content %}
+      
+       <div class="well">
+        <div class="panel panel-default">
+          <div class="panel-body">
+              <div class="input-group mb-6">
+            <form method='POST' action = "{%url 'add_book'%}">
+              {%csrf_token%}
+              <input type='text' name="title" placeholder="Name">
+              <input type='text' name="category" placeholder="Category">              
+              <br/>
+              <input type="submit" value="Save">
+            </form>
+                </div>
+          </div>
+        </div>
+      </div>
+
+{% endblock content %}
